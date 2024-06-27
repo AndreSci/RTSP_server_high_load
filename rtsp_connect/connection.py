@@ -376,8 +376,8 @@ def create_cams_threads(new_cams: dict) -> Dict[str, VideoRTSP]:
     return ret_value
 
 
-def create_cam_conn(cameras: dict, cam_name: str,
-                    fps_time: float, need_save_video: bool = True) -> Any:
+def create_cam_connect(cameras: dict, cam_name: str,
+                       fps_time: float, need_save_video: bool = False) -> Any:
     """ Ядро созданного процесса
     cameras: словарь всех камер с параметрами
     cam_name: имя камеры с которой будем работать из словаря

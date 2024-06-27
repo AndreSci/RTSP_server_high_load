@@ -1,4 +1,4 @@
-from database.db_connection import DBConnection
+from data_base.db_connection import DBConnection
 
 
 class CamerasDB(DBConnection):

@@ -1,5 +1,5 @@
 from misc.logger import Logger
-from database.db_connection import DBConnection
+from data_base.db_connection import DBConnection
 
 
 logger = Logger()
