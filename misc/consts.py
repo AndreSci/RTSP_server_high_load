@@ -6,20 +6,16 @@ CAMERAS = dict()
 FULL_CAMERAS = dict()
 LOCK = asyncio.Lock()
 
-GLOB_SETTINGS = {'CAMERAS': {
-                            'CAM2': 'rtsp://admin:admin@192.168.48.188'
-                            },
-                 'FULL_CAMERAS': [{'FDateCreate': None,
+GLOB_SETTINGS = {'cam_for_save': {'CAM2': False, 'CAM3': True},
+                 'cameras': {'CAM2': 'rtsp://admin:admin@192.168.48.188'},
+                 'cameras_from_ini': True,
+                 'fps': '20',
+                 'full_cameras': [{'FDateCreate': None,
                                    'FDesc': None,
                                    'FID': None,
                                    'FName': 'CAM2',
                                    'FRTSP': 'rtsp://admin:admin@192.168.48.188',
                                    'isPlateRecEnable': False}],
-                 'cam_for_save': {
-                     'cam2': False, 'cam3': True
-                 },
-                 'cameras_from_ini': True,
-                 'fps': '20',
                  'host': '0.0.0.0',
                  'log_path': '.\\logs\\',
                  'need_save_video': False,
@@ -72,4 +68,4 @@ class ConstManager:
 
     @staticmethod
     def get_cameras() -> dict:
-        return CAMERAS
+        return GLOB_SETTINGS.get('cameras')

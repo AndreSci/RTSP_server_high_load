@@ -26,6 +26,6 @@ async def take_frame(video_in: str):
     except Exception as ex:
         status_code = 204
         frame = b''
-        logger.warning(f"Request can't be completed correctly: {ex}")
+        logger.exception(f"Request can't be completed correctly: {ex}")
 
     return Response(content=frame, status_code=status_code, media_type="image/png")

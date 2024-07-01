@@ -217,7 +217,7 @@ class VideoRTSP:
                 if not self.first_index_gop:
                     self.first_index_gop = self.gop
 
-                print(f"index: {self.gop} - buffer_size: {buffer_size} - first_index_gop: {self.first_index_gop}")
+                # print(f"index: {self.gop} - buffer_size: {buffer_size} - first_index_gop: {self.first_index_gop}")
                 return True
 
         return False
@@ -288,7 +288,7 @@ class VideoRTSP:
 
                             if it_gop:
                                 if (index + self.gop) > time_to_new_save and not its_end:
-                                    print("I HAVE FOUND NEW INDEX")
+                                    # print("I HAVE FOUND NEW INDEX")
                                     its_end = True
                                     time_to_new_save = index + self.gop - 1
 
@@ -333,31 +333,32 @@ class VideoRTSP:
 
     def load_no_signal_pic(self):
         """ Функция подгружает картинку с надписью NoSignal """
-        with open('./no_signal.jpg', "rb") as file:
+        with open('./resources/no_signal.jpg', "rb") as file:
             self.ret_image = file.read()
 
     def take_frame(self):
-        """ Функция запроса кадра у камеры, ожидает TIME_WAIT_FRAME секунды готовки кадра """
-        start_time = datetime.datetime.now()
+        """ Функция запроса кадра у камеры, меняет ключ save_frame = True и ожидает его изменения на False """
 
         self.save_frame = True
-        self.last_time_save_frame = datetime.datetime.now()
 
         index = 0
 
         while index < 2000:  # Защита от сбитого времени на сервере
             index += 1
+
             if not self.save_frame:
 
-                self.ret_image = self.last_image
-                break
-
-            elif TIME_WAIT_FRAME < (datetime.datetime.now() - start_time).total_seconds():
+                self.last_time_save_frame = datetime.datetime.now()
+                print("New frame saved")
                 break
 
             time.sleep(0.005)
 
-        return self.ret_image
+        if self.save_frame is True:
+            # Не удалось обновить кадр за указанное время
+            return b''
+        else:
+            return self.last_image
 
 
 def create_cams_threads(new_cams: dict) -> Dict[str, VideoRTSP]:
@@ -376,7 +377,7 @@ def create_cams_threads(new_cams: dict) -> Dict[str, VideoRTSP]:
     return ret_value
 
 
-def create_cam_connect(cameras: dict, cam_name: str,
+def create_cam_connect(manager_cameras: dict, cam_name: str,
                        fps_time: float, need_save_video: bool = False) -> Any:
     """ Ядро созданного процесса
     cameras: словарь всех камер с параметрами
@@ -386,38 +387,35 @@ def create_cam_connect(cameras: dict, cam_name: str,
 
     logger_proc = Logger()
 
-    camera = VideoRTSP(cameras[cam_name].get('name'), cameras[cam_name].get('url'), need_save_video=need_save_video)
+    camera = VideoRTSP(manager_cameras[cam_name].get('name'),
+                       manager_cameras[cam_name].get('url'),
+                       need_save_video=need_save_video)
+
     camera.load_no_signal_pic()
     camera.start()
-    time_for_last_frame = datetime.datetime.now()
 
-    logger_proc.event(f"Создан процесс для камеры: {cameras[cam_name].get('name')}")
+    logger_proc.event(f"Создан процесс для камеры: {manager_cameras[cam_name].get('name')}")
 
     while True:
 
         try:
-            if cameras[cam_name].get('stop_action'):
+            if manager_cameras[cam_name].get('stop_action'):
                 break
-            elif cameras[cam_name].get('get_frame'):
-                cam_data = cameras[cam_name]
+            elif manager_cameras[cam_name].get('get_frame'):
+                cam_data = manager_cameras[cam_name]
 
                 # Буферное время для записи нового кадра (должно снять часть нагрузки)
-                current_time = datetime.datetime.now()
-                delta_time = current_time - time_for_last_frame
-
-                if delta_time.total_seconds() >= fps_time:
-                    cam_data['frame'] = camera.take_frame()
-                    cam_data['frame_size'] = camera.last_frame_size
-                    cam_data['last_time_new_frame'] = str(camera.last_time_new_frame)
-                    cam_data['frame_status'] = FRAME_STATUS_NEW
-                    time_for_last_frame = datetime.datetime.now()
-                else:
-                    cam_data['frame_status'] = FRAME_STATUS_OLD
+                cam_data['frame'] = camera.take_frame()
+                cam_data['frame_size'] = camera.last_frame_size
+                cam_data['last_time_new_frame'] = str(camera.last_time_new_frame)
+                cam_data['frame_status'] = FRAME_STATUS_NEW
 
                 cam_data['connection_status'] = camera.connect_status
 
                 cam_data['get_frame'] = False
-                cameras[cam_name] = cam_data
+
+                manager_cameras[cam_name] = cam_data
+
         except Exception as ex:
             logger_proc.exception(f"Исключение вызвало: {ex}")
 

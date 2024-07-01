@@ -8,6 +8,8 @@ from routers.kus import kus_router
 from data_base.database import GlobControlDatabase
 from misc.settings import SettingsIni
 from misc.consts import ConstManager
+from misc.glob_process import ProcessConstManager
+from rtsp_connect.manager import ProcessManager
 
 # uvicorn_error = logging.getLogger("uvicorn.error")
 # uvicorn_error.disabled = True
@@ -38,15 +40,25 @@ if __name__ == "main":
     """ Запуск через терминал с uvicorn """
     # Напоминание для запуска через терминал
     # uvicorn --no-access-log main:app --port 80
+    main_settings = SettingsIni()
+    main_settings.load_data_from_file("settings.ini")
 
-    ConstManager.set_glob_settings(SettingsIni.load_data_from_file("settings.ini"))
+    ConstManager.set_glob_settings(main_settings.take_settings_data())
     # start_process(set_ini)
+    rtsp_manager = ProcessManager(ConstManager.get_cameras())
+    rtsp_manager.start()
+    ProcessConstManager.set_process_manager(rtsp_manager)
 
 
 if __name__ == "__main__":
+    main_settings = SettingsIni()
+    main_settings.load_data_from_file("settings.ini")
 
-    ConstManager.set_glob_settings(SettingsIni.load_data_from_file("settings.ini"))
+    ConstManager.set_glob_settings(main_settings.take_settings_data())
     # start_process(set_ini)
+    rtsp_manager = ProcessManager(ConstManager.get_cameras())
+    rtsp_manager.start()
+    ProcessConstManager.set_process_manager(rtsp_manager)
 
     # start_thread = threading.Thread(target=start_socket, daemon=True)
     # start_thread.start()

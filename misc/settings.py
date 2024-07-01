@@ -11,24 +11,30 @@ def create_default_settings(file_path):
 
     # Пример значений по умолчанию, можно оставить пустым
     config['GENERAL'] = {
-        'HOST': '0.0.0.0',
-        'PORT': '80',
-        'LOG_PATH': '.\\logs\\',
-        'CAMERAS_FROM_INI': True,
-        'FPS': 20,
-        'SAVE_VIDEO': False
+        'host': '0.0.0.0',
+        'port': '80',
+        'log_path': '.\\logs\\',
+        'cameras_from_ini': True,
+        'fps': 20,
+        'save_video': False
     }
     config['BASE'] = {
-        'HOST': '0.0.0.0',
-        'USER': 'admin',
-        'PASSWORD': 'admin',
-        'CHARSET': 'cp1251'
+        'host': '0.0.0.0',
+        'user': 'admin',
+        'password': 'admin',
+        'charset': 'cp1251',
+        'dbname': 'vig_sender'
     }
     config['PHOTO'] = {
-        'PHOTO_PATH': '.\\PHOTOS\\RTSP server (Asterisk)\\'
+        'photo_path': '.\\PHOTOS\\RTSP server (Asterisk)\\'
     }
     config['CAMERAS'] = {
-        'CAM2': 'rtsp://admin:admin@192.168.48.188'
+        'cam2': 'rtsp://admin:admin@192.168.48.188',
+        'cam3': 'rtsp://admin:admin@192.168.48.189'
+    }
+    config['CAM_FOR_SAVE'] = {
+        'cam2': False,
+        'cam3': True
     }
 
     with open(file_path, 'w') as configfile:
@@ -36,14 +42,14 @@ def create_default_settings(file_path):
 
 
 def like_database_dict(FName: str, FRTSP: str, isPlateRecEnable: int):
-
+    """ Функция организует данные загруженные из settings.ini раздел CAMERAS """
     return {"FID": None,
                "FName": FName,
                "FDateCreate": None,
                "FRTSP": FRTSP,
                "FDesc": None,
-               "isPlateRec"
-               "Enable": True if isPlateRecEnable == 1 else False}
+               "isPlateRecEnable": True if isPlateRecEnable == 1 else False
+            }
 
 
 class SettingsIni:
@@ -65,27 +71,38 @@ class SettingsIni:
         # проверяем файл settings.ini
         if os.path.isfile(file_path):
             try:
-                self.settings_file.read("settings.ini", encoding="utf-8")
+                self.settings_file.read(file_path, encoding="utf-8")
                 # general settings ----------------------------------------
                 self.settings_data["host"] = self.settings_file["GENERAL"]["HOST"]
-                self.settings_data["port"] = self.settings_file["GENERAL"]["PORT"]
-                self.settings_data["fps"] = self.settings_file["GENERAL"].get("FPS")
-
-                self.settings_data['photo_path'] = self.settings_file['PHOTO']. get("PHOTO_PATH")
+                self.settings_data["port"] = self.settings_file["GENERAL"]["port"]
+                self.settings_data["fps"] = self.settings_file["GENERAL"].get("fps")
+                self.settings_data['cam_for_save'] = dict()
+                self.settings_data['photo_path'] = self.settings_file['PHOTO']. get("photo_path")
 
                 self.settings_data['cameras_from_ini'] = self.settings_file.getboolean("GENERAL",
-                                                                                        "CAMERAS_FROM_INI")
+                                                                                        "cameras_from_ini")
                 self.settings_data['need_save_video'] = self.settings_file.getboolean("GENERAL",
-                                                                                        "SAVE_VIDEO")
+                                                                                        "save_video")
                 if self.settings_data['cameras_from_ini']:
+                    # Подгружаем данные о камерах которые будем обслуживать
+                    temp_cam_dict = dict(self.settings_file["CAM_FOR_SAVE"])
+                    for cam_name in temp_cam_dict:
+                        # по соглашению сторон имена камер всегда в верхнем регистре
+                        if temp_cam_dict[cam_name] == 'False':
+                            self.settings_data['cam_for_save'][str(cam_name).upper()] = False
+                        elif temp_cam_dict[cam_name] == 'True':
+                            self.settings_data['cam_for_save'][str(cam_name).upper()] = True
+                        else:
+                            logger.warning(f"Ошибка TypeError: {temp_cam_dict[cam_name]} != False/True")
                     data_for_pars = dict(self.settings_file["CAMERAS"])
-                    self.settings_data['CAMERAS'] = dict()
-                    self.settings_data['FULL_CAMERAS'] = list()
+
+                    self.settings_data['cameras'] = dict()
+                    self.settings_data['full_cameras'] = list()
 
                     for name in data_for_pars:
                         name = str(name)
                         if len(data_for_pars.get(name)) > 5:
-                            self.settings_data['CAMERAS'][name.upper()] = data_for_pars.get(name)
+                            self.settings_data['cameras'][name.upper()] = data_for_pars.get(name)
 
                     # Логика для ответа
                     pair_for_cams = dict()
@@ -116,7 +133,7 @@ class SettingsIni:
                             pair_for_cams[name_new]['isPlateRecEnable'] = 0
 
                     for name in pair_for_cams:
-                        self.settings_data['FULL_CAMERAS'].append(
+                        self.settings_data['full_cameras'].append(
                                                             like_database_dict(
                                                                 pair_for_cams[name]['FName'],
                                                                 pair_for_cams[name]['FRTSP'],
@@ -124,7 +141,7 @@ class SettingsIni:
 
                 # self.settings_data['CAMERAS'] = dict(self.settings_file["CAMERAS"])
 
-                self.settings_data["log_path"] = self.settings_file["GENERAL"].get("LOG_PATH")
+                self.settings_data["log_path"] = self.settings_file["GENERAL"].get("log_path")
 
                 pprint.pprint(self.settings_data)
 
@@ -155,4 +172,4 @@ class SettingsIni:
 
 if __name__ == "__main__":
     ini = SettingsIni()
-    print(ini.load_data_from_file())
+    print(ini.load_data_from_file(file_path="../settings.ini"))
