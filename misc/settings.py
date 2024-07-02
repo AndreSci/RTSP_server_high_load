@@ -34,7 +34,7 @@ def create_default_settings(file_path):
     }
     config['CAM_FOR_SAVE'] = {
         'cam2': False,
-        'cam3': True
+        'cam3': False
     }
 
     with open(file_path, 'w') as configfile:
@@ -81,7 +81,7 @@ class SettingsIni:
 
                 self.settings_data['cameras_from_ini'] = self.settings_file.getboolean("GENERAL",
                                                                                         "cameras_from_ini")
-                self.settings_data['need_save_video'] = self.settings_file.getboolean("GENERAL",
+                self.settings_data['save_video'] = self.settings_file.getboolean("GENERAL",
                                                                                         "save_video")
                 if self.settings_data['cameras_from_ini']:
                     # Подгружаем данные о камерах которые будем обслуживать

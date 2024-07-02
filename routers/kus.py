@@ -5,6 +5,7 @@ from misc.glob_process import ProcessConstManager
 # from data_base.cameras import CamerasDB
 # from data_base.add_event import EventDB
 from typing import Any
+import pymysql
 
 from data_base.models import t_camera
 from data_base.database import GlobControlDatabase
@@ -20,13 +21,21 @@ kus_router = APIRouter(
 @kus_router.on_event("startup")
 async def startup():
     db_con = GlobControlDatabase.get_database()
-    await db_con.connect()
+    try:
+        await db_con.connect()
+    except pymysql.err.OperationalError as osex:
+        logger.warning(f"Can't connect to DATABASE: {osex}")
+    except Exception as ex:
+        logger.exception(f"Exception in: {ex}")
 
 
 @kus_router.on_event("shutdown")
 async def shutdown():
     db_con = GlobControlDatabase.get_database()
-    await db_con.disconnect()
+    try:
+        await db_con.disconnect()
+    except Exception as ex:
+        logger.exception(f"Exception in: {ex}")
 
 
 # @kus_router.get('/action.save')

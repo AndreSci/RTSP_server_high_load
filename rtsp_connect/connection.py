@@ -69,7 +69,7 @@ class VideoRTSP:
     """ Класс для чтения видео потока из камеры передачи его в байт-код и сохранения в файл
     """
 
-    def __init__(self, cam_name: str, url: str, saving_dir: str = None, need_save_video: bool = True):
+    def __init__(self, cam_name: str, url: str, saving_dir: str = None, save_video: bool = True):
         self.url = url
         self.cam_name = cam_name
 
@@ -92,7 +92,7 @@ class VideoRTSP:
         self.median_buffer_size = 0
 
         self.save_video_bool = SavingControl.check_dir(self.dir_save)
-        self.need_save_video = need_save_video
+        self.need_save_video = save_video
 
         self.allow_read_frame = False
 
@@ -378,7 +378,7 @@ def create_cams_threads(new_cams: dict) -> Dict[str, VideoRTSP]:
 
 
 def create_cam_connect(manager_cameras: dict, cam_name: str,
-                       fps_time: float, need_save_video: bool = False) -> Any:
+                       fps_time: float, save_video: bool = False) -> Any:
     """ Ядро созданного процесса
     cameras: словарь всех камер с параметрами
     cam_name: имя камеры с которой будем работать из словаря
@@ -389,7 +389,7 @@ def create_cam_connect(manager_cameras: dict, cam_name: str,
 
     camera = VideoRTSP(manager_cameras[cam_name].get('name'),
                        manager_cameras[cam_name].get('url'),
-                       need_save_video=need_save_video)
+                       save_video=save_video)
 
     camera.load_no_signal_pic()
     camera.start()
@@ -416,6 +416,14 @@ def create_cam_connect(manager_cameras: dict, cam_name: str,
 
                 manager_cameras[cam_name] = cam_data
 
+            elif manager_cameras[cam_name].get('new_event'):
+                cam_data = manager_cameras[cam_name]
+
+                camera.need_save_video = cam_data['save_video']
+                cam_data['new_event'] = False
+
+                manager_cameras[cam_name] = cam_data
+
         except Exception as ex:
             logger_proc.exception(f"Исключение вызвало: {ex}")
 
@@ -425,6 +433,6 @@ def create_cam_connect(manager_cameras: dict, cam_name: str,
 
 
 if __name__ == "__main__":
-    VideoRTSP("CAM2", "rtsp://admin:admin@192.168.48.188", need_save_video=True).start()
+    VideoRTSP("CAM2", "rtsp://admin:admin@192.168.48.188", save_video=True).start()
 
     input()  # Заглушка от завершения работы программы

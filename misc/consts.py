@@ -18,7 +18,7 @@ GLOB_SETTINGS = {'cam_for_save': {'CAM2': False, 'CAM3': True},
                                    'isPlateRecEnable': False}],
                  'host': '0.0.0.0',
                  'log_path': '.\\logs\\',
-                 'need_save_video': False,
+                 'save_video': False,
                  'photo_path': '.\\PHOTOS\\RTSP server (Asterisk)\\',
                  'port': '80'}
 
@@ -68,4 +68,9 @@ class ConstManager:
 
     @staticmethod
     def get_cameras() -> dict:
-        return GLOB_SETTINGS.get('cameras')
+        ret_value = dict()
+        ret_value['cameras'] = GLOB_SETTINGS.get('cameras')
+        ret_value['cam_for_save'] = GLOB_SETTINGS.get('cam_for_save')
+        ret_value['save_video'] = GLOB_SETTINGS.get('save_video')
+
+        return ret_value
