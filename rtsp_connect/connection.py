@@ -33,6 +33,45 @@ FRAME_STATUS_ERROR = 202
 FRAME_STATUS_OLD = 203
 
 
+class ProcessData:
+    """ Класс управление меж процессными данными """
+    def __init__(self, cam_name: str, url: str,
+                 get_frame: bool = False, frame: bytes = b'',
+                 save_video: bool = False, new_event: bool = False,
+                 time_fps: int = 0.1):
+
+        self.cam_name = cam_name
+        self.url = url
+        self.get_frame = get_frame
+        self.frame = frame
+        self.save_video = save_video
+        self.new_event = new_event
+        self.time_fps = time_fps  # Базово установил 10 кадров в секунду обновлять
+
+    def get_dict(self) -> Dict:
+        # Оставил 'name' для упрощения интеграции в код
+        return {"name": self.cam_name,
+                 "url": self.url,
+                 "get_frame": self.get_frame,
+                 "frame": self.frame,
+                 'save_video': self.save_video,
+                 'new_event': self.new_event,
+                'time_fps': self.time_fps}
+
+    def update_data(self, manage_dict: dict) -> bool:
+        self.cam_name = manage_dict.get('name')
+        self.url = manage_dict.get('url')
+        self.get_frame = manage_dict.get('get_frame')
+        self.frame = manage_dict.get('frame')
+        self.save_video = manage_dict.get('save_video')
+        self.new_event = manage_dict.get('new_event')
+
+        return True
+
+    def __str__(self):
+        return f"{self.get_dict()}"
+
+
 class ConnectStatus(Enum):
     Connecting = 1
     Connected = 2
