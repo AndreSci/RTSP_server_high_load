@@ -4,7 +4,7 @@ import multiprocessing as mp
 from typing import Dict
 from rtsp_connect.resources_loader import ResLoader
 from misc.logger import Logger
-from rtsp_connect.connection import create_cam_connect, ConnectStatus
+from rtsp_connect.connection import create_cam_connect, ProcessData
 
 logger = Logger()
 LOCK_NEW_FRAME = asyncio.Lock()
@@ -34,7 +34,7 @@ class ProcessManager:
         self.last_request_new_frame = {'CAM999': datetime.datetime.now()}
 
         # Пустой кадр
-        self.no_frame = ResLoader.load_no_signal()
+        self.no_frame = b''
 
         # Кадр из камеры
         self.frames_from_cams = {'CAM999': {'time': datetime.datetime.now(),
@@ -49,7 +49,7 @@ class ProcessManager:
             delta_time_frame = (datetime.datetime.now() - self.frames_from_cams[cam_name].get('time')).total_seconds()
 
             if delta_time_frame > self.frame_time_life:
-                print(f"Время от последнего нового кадра: {cam_name} - {delta_time_frame}: {self.frame_time_life}")
+                # print(f"Время от последнего нового кадра: {cam_name} - {delta_time_frame}: {self.frame_time_life}")
                 # Обновляем кадр если кадр устарел
                 await self.__new_frame(cam_name)
 
@@ -66,6 +66,7 @@ class ProcessManager:
         return self.no_frame
 
     async def get_frame_res(self, cam_name: str = None) -> bytes:
+        # Функция добавлена для стрим соединения через FastAPI
         """ Функция возвращает последний успешный кадр из указанной камеры """
 
         ret_value = {"result": False, "frame": b''}

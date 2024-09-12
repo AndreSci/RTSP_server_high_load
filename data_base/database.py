@@ -17,7 +17,7 @@ class GlobControlDatabase:
         global DATABASE_URL, DATABASE, ENGINE
         try:
             DATABASE_URL = f"mysql+aiomysql://{username}:{password}@{url}:{port}/{dbname}?charset={charset}"
-            print(DATABASE_URL)
+
             DATABASE = Database(DATABASE_URL)
             ENGINE = create_engine(DATABASE_URL)
 

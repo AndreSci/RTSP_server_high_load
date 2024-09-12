@@ -10,6 +10,7 @@ from misc.settings import SettingsIni
 from misc.consts import ConstManager
 from misc.glob_process import ProcessConstManager
 from rtsp_connect.manager import ProcessManager
+from config import SETTINGS_FILE
 
 # uvicorn_error = logging.getLogger("uvicorn.error")
 # uvicorn_error.disabled = True
@@ -41,7 +42,7 @@ if __name__ == "main":
     # Напоминание для запуска через терминал
     # uvicorn --no-access-log main:app --port 80
     main_settings = SettingsIni()
-    main_settings.load_data_from_file("settings.ini")
+    main_settings.load_data_from_file(SETTINGS_FILE)
 
     ConstManager.set_glob_settings(main_settings.take_settings_data())
     # start_process(set_ini)
@@ -52,7 +53,7 @@ if __name__ == "main":
 
 if __name__ == "__main__":
     main_settings = SettingsIni()
-    main_settings.load_data_from_file("settings.ini")
+    main_settings.load_data_from_file(SETTINGS_FILE)
 
     ConstManager.set_glob_settings(main_settings.take_settings_data())
     # start_process(set_ini)
@@ -63,4 +64,4 @@ if __name__ == "__main__":
     # start_thread = threading.Thread(target=start_socket, daemon=True)
     # start_thread.start()
 
-    uvicorn.run(app, host='0.0.0.0', port=8011, reload=False)
+    uvicorn.run(app, host='0.0.0.0', port=int(main_settings.settings_data.get('port')), reload=False)

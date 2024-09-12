@@ -1,9 +1,14 @@
 from typing import Tuple
+from pydantic_settings import BaseSettings
+
 HOST = '0.0.0.0'
+PORT = 8093
+
 SOCKET_PORT = 9098
 FRAME_TIME_LIFE = 0.1  # sec
 
 SAVED_VIDEO_DIR = "saved_video\\"
+SETTINGS_FILE = "settings.ini"
 
 
 class ConfigAccess:

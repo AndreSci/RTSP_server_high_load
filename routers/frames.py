@@ -82,3 +82,11 @@ async def video_feed(video_in: str, request: Request):
     ret_value = StreamingResponse(stream(cam_name, connect_id), media_type="multipart/x-mixed-replace; boundary=frame")
 
     return ret_value
+
+
+@camera_router.get("/test_thread_request")
+async def video_feed():
+    print("Тест на входе HELLO")
+    await asyncio.sleep(5)
+
+    return "HELLO"

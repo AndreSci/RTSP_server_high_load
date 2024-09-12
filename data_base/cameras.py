@@ -32,8 +32,8 @@ class CamerasDB(DBConnection):
 
         return ret_value
 
-    def find_camera(self, caller_id: str) -> dict:
-
+    def find_cameras(self, caller_id: str) -> dict:
+        """ Получаем список камер по абоненту """
         ret_value = {"RESULT": "ERROR", "DESC": "", "DATA": {}}
 
         try:

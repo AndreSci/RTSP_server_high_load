@@ -35,12 +35,12 @@ FRAME_STATUS_OLD = 203
 
 class ProcessData:
     """ Класс управление меж процессными данными """
-    def __init__(self, cam_name: str, url: str,
+    def __init__(self, name: str, url: str,
                  get_frame: bool = False, frame: bytes = b'',
                  save_video: bool = False, new_event: bool = False,
                  time_fps: int = 0.1):
 
-        self.cam_name = cam_name
+        self.name = name
         self.url = url
         self.get_frame = get_frame
         self.frame = frame
@@ -49,8 +49,7 @@ class ProcessData:
         self.time_fps = time_fps  # Базово установил 10 кадров в секунду обновлять
 
     def get_dict(self) -> Dict:
-        # Оставил 'name' для упрощения интеграции в код
-        return {"name": self.cam_name,
+        return {"name": self.name,
                  "url": self.url,
                  "get_frame": self.get_frame,
                  "frame": self.frame,
@@ -59,7 +58,7 @@ class ProcessData:
                 'time_fps': self.time_fps}
 
     def update_data(self, manage_dict: dict) -> bool:
-        self.cam_name = manage_dict.get('name')
+        self.name = manage_dict.get('name')
         self.url = manage_dict.get('url')
         self.get_frame = manage_dict.get('get_frame')
         self.frame = manage_dict.get('frame')

@@ -12,7 +12,7 @@ def create_default_settings(file_path):
     # Пример значений по умолчанию, можно оставить пустым
     config['GENERAL'] = {
         'host': '0.0.0.0',
-        'port': '80',
+        'port': '8093',
         'log_path': '.\\logs\\',
         'cameras_from_ini': True,
         'fps': 20,
