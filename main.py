@@ -5,6 +5,7 @@ import uvicorn
 from fastapi import FastAPI
 from routers.frames import camera_router
 from routers.kus import kus_router
+from routers.asterisk import asterisk_router
 from data_base.database import GlobControlDatabase
 from misc.settings import SettingsIni
 from misc.consts import ConstManager
@@ -25,6 +26,7 @@ app = FastAPI()
 # Register routes
 app.include_router(camera_router)
 app.include_router(kus_router)
+app.include_router(asterisk_router)
 
 
 # def start_socket():
