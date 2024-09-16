@@ -1,5 +1,6 @@
 from sqlalchemy import Table, Column, Integer, String, DateTime, ForeignKey
 from data_base.database import METADATA
+from sqlalchemy import text
 
 t_camera = Table(
     "tcamera",
@@ -42,3 +43,11 @@ t_event = Table(
     Column("FEventDescription", String(512)),
     Column("FProcessed", Integer)
 )
+
+query_cameras_by_caller_id = text(f"select * "
+                                     f"from vig_sender.tasteriskcaller, "
+                                  f"vig_sender.tcameragroups, "
+                                  f"vig_sender.tcamera "
+                                     f"where tasteriskcaller.FName = :fname "
+                                     f"and tcameragroups.FAsteriskCallerID = tasteriskcaller.FID "
+                                  f"and tcamera.FID = tcameragroups.FCameraID")

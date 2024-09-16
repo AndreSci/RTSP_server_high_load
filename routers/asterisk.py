@@ -1,11 +1,15 @@
-import asyncio
 import datetime
-
+from typing import Dict
 from fastapi import APIRouter, Response, Request, Depends
 from misc.logger import Logger
 from misc.glob_process import ProcessConstManager
 from data_base.cameras import CamerasDB
 from data_base.add_event import EventDB
+from data_base.models import t_camera, query_cameras_by_caller_id
+
+from data_base.database import GlobControlDatabase
+from sqlalchemy.sql import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = Logger()
 
@@ -15,7 +19,8 @@ asterisk_router = APIRouter(
 
 
 @asterisk_router.get('/asterisk_save')
-async def save_frame_to_file(caller_id: int, answer_id: int):
+async def save_frame_to_file(caller_id: int, answer_id: int,
+                                db: AsyncSession = Depends(GlobControlDatabase.get_db)):
     """ Через caller_id находит в базе данные камер которые связаны (caller_id == tasteriskcaller.FName)"""
 
     frame = b''
@@ -23,14 +28,17 @@ async def save_frame_to_file(caller_id: int, answer_id: int):
     logger.event(f"Обращение на сохранения кадра: caller_id {caller_id} answer_id {answer_id}")
 
     try:
-        cameras = CamerasDB().find_cameras(caller_id)
+        # cameras = CamerasDB().find_cameras_by_caller_id(caller_id)
 
-        if cameras.get('RESULT') == 'SUCCESS':
-            logger.info(cameras, print_it=False)
+        result = await db.execute(query_cameras_by_caller_id, {"fname": str(caller_id)})
+        cameras_res = result.mappings().fetchall()
 
-            for camera in cameras.get('DATA'):
-                # cam_name = str(video_in)
-                # cam_name = 'CAM' + cam_name[cam_name.find(':') + 1:]
+        print(cameras_res)
+
+        if len(cameras_res) > 0:
+            logger.info(cameras_res, print_it=False)
+
+            for camera in cameras_res:
                 cam_name = camera.get('FName')
                 cam_id = camera.get('FID')
 
@@ -44,7 +52,8 @@ async def save_frame_to_file(caller_id: int, answer_id: int):
                 with open(file_url, 'wb') as file:
                     file.write(frame)
 
-                res_add_event = EventDB().add_photo(caller_id, answer_id, cam_id, file_url)
+                res_add_event = await EventDB().add_photo_async(caller_id, answer_id, cam_id, file_url, db)
+                # res_add_event = EventDB().add_photo(caller_id, answer_id, cam_id, file_url)
 
                 if res_add_event:
                     logger.info(f"Успешно создано событие в БД для: {caller_id} {answer_id} {cam_id} {file_url}")
