@@ -27,8 +27,18 @@ class ConstManager:
 
     @staticmethod
     def set_glob_settings(set_ini: dict) -> bool:
-        global GLOB_SETTINGS
+        global GLOB_SETTINGS, PHOTO_PATH, FPS
         GLOB_SETTINGS = set_ini
+
+        try:
+            PHOTO_PATH = set_ini['photo_path']
+
+            if type(set_ini['fps']) is int:
+                FPS = set_ini['fps']
+            else:
+                print(f"Warning in ConstManager.set_glob_settings: set_ini['fps'] type {type(set_ini['fps'])} != int")
+        except Exception as ex:
+            print(f"Exception in ConstManager.set_glob_settings: {ex}")
         return True
 
     @staticmethod
@@ -53,16 +63,20 @@ class ConstManager:
         return True
 
     @staticmethod
+    def get_photo_path() -> str:
+        return PHOTO_PATH
+
+    @staticmethod
     def set_cameras(cameras: dict) -> bool:
-        global CAMERAS
-        CAMERAS = cameras
+        global GLOB_SETTINGS
+        GLOB_SETTINGS['cameras'] = cameras
 
         return True
 
     @staticmethod
-    def set_cameras_full(full_cameras: dict) -> bool:
-        global FULL_CAMERAS
-        FULL_CAMERAS = full_cameras
+    def set_cameras_full(full_cameras: list) -> bool:
+        global GLOB_SETTINGS
+        GLOB_SETTINGS['full_cameras'] = full_cameras
 
         return True
 
@@ -74,3 +88,7 @@ class ConstManager:
         ret_value['save_video'] = GLOB_SETTINGS.get('save_video')
 
         return ret_value
+
+    @staticmethod
+    def get_cameras_full() -> list:
+        return GLOB_SETTINGS['full_cameras']

@@ -75,7 +75,7 @@ class SettingsIni:
                 # general settings ----------------------------------------
                 self.settings_data["host"] = self.settings_file["GENERAL"]["HOST"]
                 self.settings_data["port"] = self.settings_file["GENERAL"]["port"]
-                self.settings_data["fps"] = self.settings_file["GENERAL"].get("fps")
+                self.settings_data["fps"] = int(self.settings_file["GENERAL"].get("fps"))
                 self.settings_data['cam_for_save'] = dict()
                 self.settings_data['photo_path'] = self.settings_file['PHOTO']. get("photo_path")
 

@@ -387,7 +387,6 @@ class VideoRTSP:
             if not self.save_frame:
 
                 self.last_time_save_frame = datetime.datetime.now()
-                print("New frame saved")
                 break
 
             time.sleep(0.005)

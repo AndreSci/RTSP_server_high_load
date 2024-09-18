@@ -5,7 +5,7 @@ class CamerasDB(DBConnection):
 
     def take_cameras(self) -> dict:
 
-        ret_value = {"RESULT": "ERROR", "DESC": "", "DATA": {}, "FULL_CAMERAS": list()}
+        ret_value = {"RESULT": "ERROR", "DESC": "", "DATA": {}, "full_cameras": list()}
 
         try:
             with self.connection.cursor() as cur:
@@ -18,7 +18,7 @@ class CamerasDB(DBConnection):
 
                     ret_value['DATA'][camera['FName']] = camera['FRTSP']
 
-                    ret_value['FULL_CAMERAS'].append({"FID": camera['FID'],
+                    ret_value['full_cameras'].append({"FID": camera['FID'],
                                                        "FName": camera['FName'],
                                                        "FDateCreate": str(camera['FDateCreate']),
                                                        "FRTSP": camera['FRTSP'],

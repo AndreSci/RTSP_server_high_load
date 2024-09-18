@@ -6,7 +6,7 @@ from misc.glob_process import ProcessConstManager
 # from data_base.add_event import EventDB
 from typing import Any
 import pymysql
-
+from misc.consts import ConstManager
 from data_base.models import t_camera
 from data_base.database import GlobControlDatabase
 from typing import Dict
@@ -187,35 +187,17 @@ async def shutdown():
 @kus_router.get('/action.get_cameras', response_model=Dict)
 async def get_cameras(user: str, password: str, skip: int = 0, limit: int = 500):
     """ Даём команду RTSP серверу на обновления списка работающих камер """
-    ret_value = {"RESULT": "ERROR", "DESC": '', "DATA": dict(), 'FULL_CAMERAS': list()}
+
+    ret_value = {"RESULT": "ERROR", "DESC": '', "DATA": dict()}
 
     if user == 'admin' and password == 'admin':
-        db_con = GlobControlDatabase.get_database()
 
-        query = t_camera.select().offset(skip).limit(limit)
-
-        results = await db_con.fetch_all(query)
-        # results_dict = [dict(result) for result in results]
-
-        # Данный метод нужен для Димы (распознавание номеров)
-        ret_value = {'RESULT': 'SUCCESS', 'DATA': dict(), 'FULL_CAMERAS': list()}
-
-        # Требуется для корректного вывода времени и перестройки в bool числа (требования ТЗ)
-        for camera in results:
-            camera = dict(camera)
-            ret_value['DATA'][camera['FName']] = camera['FRTSP']
-
-            try:
-                ret_value['FULL_CAMERAS'].append({"FID": camera['FID'],
-                                                  "FName": camera['FName'],
-                                                  "FDateCreate": str(camera['FDateCreate']),
-                                                  "FRTSP": camera['FRTSP'],
-                                                  "FDesc": camera['FDesc'],
-                                                  "isPlateRec"
-                                                  "Enable": True if camera['isPlateRecEnable'] == 1 else False})
-            except Exception as ex:
-                logger.exception(f"Exception in: {ex}")
-
+        try:
+            ret_value['DATA'] = ConstManager.get_cameras_full()
+            ret_value['RESULT'] = "SUCCESS"
+        except Exception as ex:
+            logger.exception(f"Исключение вызвало: {ex}")
+            ret_value['DESC'] = f"Исключение в работе сервиса: {ex}"
     else:
         ret_value['DESC'] = f"Access Denied: Wrong UserName/Password"
 
