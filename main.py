@@ -2,6 +2,7 @@
 uvicorn app --port 8093 --reload
 """
 import uvicorn
+import ctypes
 from fastapi import FastAPI
 from routers.frames import camera_router
 from routers.kus import kus_router
@@ -67,6 +68,9 @@ if __name__ == "main":
     rtsp_manager.start()
     ProcessConstManager.set_process_manager(rtsp_manager)
 
+    # Меняем имя терминала
+    ctypes.windll.kernel32.SetConsoleTitleW(f"RTSP server (port: {main_settings.settings_data.get('port')})")
+
 
 if __name__ == "__main__":
     main_settings = SettingsIni()
@@ -82,6 +86,9 @@ if __name__ == "__main__":
 
     # start_thread = threading.Thread(target=start_socket, daemon=True)
     # start_thread.start()
+
+    # Меняем имя терминала
+    ctypes.windll.kernel32.SetConsoleTitleW(f"RTSP server (port: {main_settings.settings_data.get('port')})")
 
     uvicorn.run(app,
                 host='0.0.0.0',

@@ -61,7 +61,9 @@ class ProcessManager:
             return self.frames_from_cams[cam_name].get('frame')
 
         else:
-            print(f"The required camera could not be found: {cam_name}")
+            print(f"{datetime.datetime.now()}\tProcessManager.get_frame()\t"
+                  f"The required camera could not be found: {cam_name}")
+            await asyncio.sleep(1)
 
         return self.no_frame
 
