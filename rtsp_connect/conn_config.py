@@ -1,0 +1,9 @@
+
+
+TIME_WAIT_FRAME = 1.5
+FILE_FORMAT = 'mp4'
+PERIOD_TO_SAVE = 300  # Число сохранённых кадров в файл
+
+FRAME_STATUS_NEW = 201
+FRAME_STATUS_ERROR = 202
+FRAME_STATUS_OLD = 203

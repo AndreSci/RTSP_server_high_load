@@ -14,6 +14,8 @@ from misc.logger import Logger
 from misc.clearing import CleanerDir
 
 from config import SAVED_VIDEO_DIR
+from rtsp_connect.conn_config import (TIME_WAIT_FRAME, FILE_FORMAT,
+                                      PERIOD_TO_SAVE, FRAME_STATUS_NEW, FRAME_STATUS_OLD, FRAME_STATUS_ERROR)
 
 logger = Logger()
 
@@ -23,14 +25,7 @@ logging.basicConfig()
 av.logging.set_level(av.logging.FATAL)
 logging.getLogger('libav').setLevel(logging.ERROR)
 
-TIME_WAIT_FRAME = 1.5
-FILE_FORMAT = 'mp4'
 SAVING_DIR = os.path.join(os.getcwd(), SAVED_VIDEO_DIR)
-PERIOD_TO_SAVE = 300  # Число сохранённых кадров в файл
-
-FRAME_STATUS_NEW = 201
-FRAME_STATUS_ERROR = 202
-FRAME_STATUS_OLD = 203
 
 
 class ProcessData:
@@ -124,7 +119,7 @@ class VideoRTSP:
         self.file_name_with_dir = ''
 
         self.gop = 40  # опорный кадр
-        self.first_index_gop = 0
+        self.first_index_gop = 0  # Переменная нужно для корректировки начала опорного кадра
         self.queue_gop = queue.Queue()
         self.queue_buffer = queue.Queue()
         self.median_buffer_size = 0
@@ -146,7 +141,7 @@ class VideoRTSP:
         self.th_do_frame_lock = threading.Lock()
 
         self.allow_read_cam = True
-        self.thread_object = threading.Thread
+        self.thread_object: threading.Thread
         self.miss_frame_index = 0
 
     def check_date(self, date_from: datetime.datetime) -> bool:
@@ -174,7 +169,7 @@ class VideoRTSP:
         self.save_video_bool = SavingControl.check_dir(self.saving_dir_for_days)
 
     def __update_file_name(self):
-        print("Создаем новый файл для записи истории видео...")
+        logger.info("Создаем новый файл для записи истории видео...")
 
         try:
             if os.path.exists(self.file_name_with_dir):
@@ -189,7 +184,7 @@ class VideoRTSP:
             self.file_name = str(datetime.datetime.now().strftime("%Y-%m-%d %H-%M-%S"))
 
             self.file_name_with_dir = f"{self.saving_dir_for_days}{self.file_name}.{FILE_FORMAT}"
-            print(self.file_name_with_dir)
+            logger.info(self.file_name_with_dir)
         except Exception as ex:
             logger.warning(f"Попытка записи в файл завершилась с ошибкой: {ex}")
 
@@ -365,7 +360,7 @@ class VideoRTSP:
                                 self.last_time_new_frame = datetime.datetime.now()
 
                     except Exception as ex:
-                        print(f"Исключение в работе чтения packet: {ex}")
+                        logger.warning(f"Исключение в работе чтения packet: {ex}")
 
                 output.close()
 

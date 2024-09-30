@@ -2,12 +2,19 @@
 import os
 import datetime
 import shutil
+import multiprocessing
 
 
 class CleanerDir:
-    @staticmethod
-    def clear_dir(dir_for_save: str, days_for_save: str = 1):
+    @classmethod
+    def clear_dir(cls, dir_for_save: str, days_for_save: str = 1):
         """ Удаляет папки которым больше через указано в DAYS_FOR_SAVE (дата написана в имени папки)"""
+        # Создаем процесс чтоб не блокировать поток обработки кадров, нам не нужно заботиться об его завершении.
+        proc1 = multiprocessing.Process(target=cls.__work, args=(dir_for_save, days_for_save))
+        proc1.start()
+
+    @classmethod
+    def __work(cls, dir_for_save: str, days_for_save):
         dir_res = os.walk(dir_for_save)
         try:
             test_days_step_1: list = None
