@@ -4,7 +4,7 @@
 
 
 API is used to relay frames from video surveillance cameras and allows multiple users to connect to one camera. 
-It receives a list of cameras from the database, creates separate processes for each camera and connects to it using the PayAV library.
+It receives a list of cameras from the database, creates separate processes for each camera and connects to it using the PyAV library.
 
 -
 -
